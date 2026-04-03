@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Descubra quanto você ganha emprestando seu dinheiro — Credigrupo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:      #002B16;
+  --sur:     #003D1F;
+  --sur2:    #004D26;
+  --neon:    #AAFF44;
+  --green:   #006633;
+  --white:   #FFFFFF;
+  --muted:   rgba(255,255,255,0.5);
+  --border:  rgba(170,255,68,0.15);
+  --amber:   #F59E0B;
+  --red:     #EF4444;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;}
+
+/* HEADER */
+.header{background:var(--sur);border-bottom:0.5px solid var(--border);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-bars{display:flex;gap:3px;align-items:flex-end;height:24px;}
+.logo-bar{width:4px;background:var(--neon);border-radius:2px;transform:skewY(-8deg);}
+.logo-bar:nth-child(1){height:10px;opacity:0.6;}
+.logo-bar:nth-child(2){height:20px;}
+.logo-bar:nth-child(3){height:14px;opacity:0.8;}
+.logo-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--white);letter-spacing:1px;}
+.logo-sub{font-size:9px;color:var(--neon);letter-spacing:3px;margin-top:-3px;}
+.header-tag{background:rgba(170,255,68,0.1);border:0.5px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--neon);font-weight:500;}
+
+/* HERO */
+.hero{background:var(--bg);padding:40px 32px 0;max-width:800px;margin:0 auto;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(170,255,68,0.08);border:0.5px solid var(--border);border-radius:20px;padding:5px 14px;margin-bottom:16px;}
+.hero-tag-dot{width:6px;height:6px;background:var(--neon);border-radius:50%;}
+.hero-tag span{font-size:11px;color:var(--neon);font-weight:500;letter-spacing:0.5px;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(24px,4vw,36px);font-weight:800;color:var(--white);line-height:1.15;letter-spacing:-0.5px;margin-bottom:12px;}
+.hero h1 em{color:var(--neon);font-style:normal;}
+.hero p{font-size:15px;color:var(--muted);line-height:1.7;max-width:520px;margin-bottom:32px;}
+
+/* CALCULADORA */
+.calc-wrap{max-width:800px;margin:0 auto;padding:0 32px 48px;}
+
+.input-section{background:var(--sur);border-radius:16px;padding:24px;border:0.5px solid var(--border);margin-bottom:20px;}
+.input-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white);margin-bottom:16px;letter-spacing:0.3px;}
+
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.input-group{display:flex;flex-direction:column;gap:8px;}
+.input-group label{font-size:11px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
+.slider-row{display:flex;align-items:center;gap:12px;}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;background:var(--sur2);outline:none;}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--neon);cursor:pointer;}
+.slider-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--neon);min-width:70px;text-align:right;}
+
+/* MÉTRICAS */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.metric{background:var(--sur);border-radius:12px;padding:18px;border:0.5px solid var(--border);text-align:center;}
+.metric-label{font-size:11px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;}
+.metric-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--white);line-height:1;}
+.metric-val.neon{color:var(--neon);}
+.metric-val.amber{color:var(--amber);}
+.metric-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* GRÁFICO */
+.chart-section{background:var(--sur);border-radius:16px;padding:24px;border:0.5px solid var(--border);margin-bottom:20px;}
+.chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.chart-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white);}
+.chart-legend{display:flex;gap:16px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.chart-canvas{position:relative;width:100%;height:220px;}
+
+/* TABELA */
+.table-section{background:var(--sur);border-radius:16px;overflow:hidden;border:0.5px solid var(--border);margin-bottom:24px;}
+.table-head{display:grid;grid-template-columns:1fr 2fr 2fr 2fr;gap:8px;padding:12px 20px;border-bottom:0.5px solid var(--border);}
+.table-head span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.table-row{display:grid;grid-template-columns:1fr 2fr 2fr 2fr;gap:8px;padding:11px 20px;border-bottom:0.5px solid rgba(170,255,68,0.05);transition:background 0.15s;}
+.table-row:hover{background:rgba(170,255,68,0.04);}
+.table-row:last-child{border-bottom:none;}
+.table-row.mark{background:rgba(170,255,68,0.08);border-bottom:0.5px solid rgba(170,255,68,0.15);}
+.table-row span{font-size:13px;color:rgba(255,255,255,0.75);}
+.table-row .neon{color:var(--neon);font-weight:600;}
+.table-row .mes-num{font-weight:500;color:var(--white);}
+
+/* AVISO */
+.aviso{background:rgba(245,158,11,0.08);border:0.5px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;}
+.aviso p{font-size:13px;color:rgba(245,158,11,0.9);line-height:1.6;}
+
+/* CTA */
+.cta-section{background:var(--sur);border-radius:16px;padding:28px;border:0.5px solid var(--border);text-align:center;}
+.cta-section h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--white);margin-bottom:8px;}
+.cta-section p{font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:var(--neon);color:var(--green);border:none;border-radius:10px;padding:14px 28px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:0.3px;}
+.btn-primary:hover{background:#99EE33;}
+.btn-outline{background:transparent;color:var(--white);border:0.5px solid var(--border);border-radius:10px;padding:14px 28px;font-family:'Syne',sans-serif;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block;}
+.btn-outline:hover{border-color:var(--neon);color:var(--neon);}
+
+/* FOOTER */
+footer{background:var(--sur);border-top:0.5px solid var(--border);padding:16px 32px;text-align:center;}
+footer p{font-size:12px;color:var(--muted);}
+footer span{color:var(--neon);}
+
+@media(max-width:600px){
+  .header{padding:14px 16px;}
+  .hero{padding:28px 16px 0;}
+  .calc-wrap{padding:0 16px 32px;}
+  .input-row{grid-template-columns:1fr;}
+  .metrics{grid-template-columns:1fr 1fr;}
+  .metrics .metric:last-child{grid-column:span 2;}
+  .cta-btns{flex-direction:column;}
+  .btn-primary,.btn-outline{text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-bars">
+      <div class="logo-bar"></div>
+      <div class="logo-bar"></div>
+      <div class="logo-bar"></div>
+    </div>
+    <div>
+      <div class="logo-name">CREDIGRUPO</div>
+      <div class="logo-sub">CRÉDITO ENTRE PESSOAS</div>
+    </div>
+  </div>
+  <div class="header-tag">Descubra quanto você ganha</div>
+</div>
+
+<div class="hero">
+  <div class="hero-tag"><div class="hero-tag-dot"></div><span>Para quem quer emprestar dinheiro</span></div>
+  <h1>Descubra quanto você ganha<br/>emprestando seu dinheiro pela <em>Credigrupo</em></h1>
+  <p>Você já empresta dinheiro? Veja quanto você poderia ganhar de forma segura, com contrato jurídico e pagamento automático via PIX.</p>
+</div>
+
+<div class="calc-wrap">
+
+  <div class="input-section">
+    <div class="input-title">Ajuste os valores abaixo</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Capital inicial</label>
+        <div class="slider-row">
+          <input type="range" id="capital" min="1000" max="200000" step="1000" value="30000" oninput="update()">
+          <span class="slider-val" id="capitalVal">R$ 30.000</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Período de investimento</label>
+        <div class="slider-row">
+          <input type="range" id="meses" min="6" max="60" step="6" value="36" oninput="update()">
+          <span class="slider-val" id="mesesVal">36 meses</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Taxa de recebimento (%)</label>
+        <div class="slider-row">
+          <input type="range" id="receb" min="60" max="100" step="5" value="80" oninput="update()">
+          <span class="slider-val" id="recebVal">80%</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Taxa de juros ao mês — Credigrupo</label>
+        <div class="slider-row" style="opacity:0.6;pointer-events:none;">
+          <input type="range" min="20" max="20" value="20">
+          <span class="slider-val" style="color:var(--neon);">20% a.m.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Saldo ao final</div>
+      <div class="metric-val neon" id="saldoFinal">—</div>
+      <div class="metric-sub" id="saldoSub">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Lucro líquido</div>
+      <div class="metric-val neon" id="lucroLiq">—</div>
+      <div class="metric-sub" id="lucroSub">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Seu dinheiro multiplicou</div>
+      <div class="metric-val amber" id="multi">—</div>
+      <div class="metric-sub">vezes o valor inicial</div>
+    </div>
+  </div>
+
+  <div class="aviso">
+    <p id="avisoText">Os valores consideram reinvestimento total dos retornos a cada mês. A taxa efetiva líquida varia conforme a inadimplência real da carteira. Simulação para fins ilustrativos.</p>
+  </div>
+
+  <div class="chart-section">
+    <div class="chart-header">
+      <span class="chart-title">Como seu dinheiro cresce mês a mês</span>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#AAFF44;"></div>Saldo investido</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.2);"></div>Capital inicial</div>
+      </div>
+    </div>
+    <div class="chart-canvas"><canvas id="simChart"></canvas></div>
+  </div>
+
+  <div class="table-section">
+    <div class="table-head">
+      <span>Mês</span>
+      <span>Saldo acumulado</span>
+      <span>Juros do mês</span>
+      <span>Total recebido</span>
+    </div>
+    <div id="simTable"></div>
+  </div>
+
+  <div class="cta-section">
+    <h3>Chegando em 30 de abril de 2026!</h3>
+    <p>O app Credigrupo chega em 30 de abril de 2026. Cadastre seu interesse agora e seja um dos primeiros a emprestar pela plataforma.</p>
+    <div class="cta-btns">
+      <a href="https://www.credigrupo.com.br" class="btn-primary">Lançamento 30 de abril de 2026 🚀</a>
+      <a href="https://www.credigrupo.com.br" class="btn-outline">Novidades em breve</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 <span>Credigrupo</span> · Crédito entre pessoas · <span>www.credigrupo.com.br</span> · Simulação para fins ilustrativos. Rentabilidade passada não garante resultados futuros.</p>
+</footer>
+
+<script>
+const fBRL = v => 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+const fBRLk = v => {
+  if (v >= 1000000) return 'R$ ' + (v/1000000).toFixed(1).replace('.',',') + ' Milhões';
+  if (v >= 1000)    return 'R$ ' + (v/1000).toFixed(0) + ' Mil';
+  return 'R$ ' + Math.round(v);
+};
+
+let chart = null;
+
+function update() {
+  const capital = parseInt(document.getElementById('capital').value);
+  const meses   = parseInt(document.getElementById('meses').value);
+  const receb   = parseInt(document.getElementById('receb').value) / 100;
+  const taxa    = 0.20;
+
+  document.getElementById('capitalVal').textContent = fBRL(capital);
+  document.getElementById('mesesVal').textContent   = meses + ' meses';
+  document.getElementById('recebVal').textContent   = Math.round(receb * 100) + '%';
+
+  const rows = [];
+  let saldo = capital;
+  let totalJuros = 0;
+
+  for (let m = 1; m <= meses; m++) {
+    const juros = saldo * taxa;
+    const jurosReceb = juros * receb;
+    saldo = saldo + jurosReceb;
+    totalJuros += jurosReceb;
+    rows.push({ mes: m, saldo, jurosReceb, totalJuros });
+  }
+
+  const final = rows[rows.length - 1];
+  const multi = final.saldo / capital;
+  const taxaEfetiva = (taxa * receb * 100).toFixed(1);
+
+  document.getElementById('saldoFinal').textContent = fBRL(final.saldo);
+  document.getElementById('saldoSub').textContent   = 'em ' + meses + ' meses';
+  document.getElementById('lucroLiq').textContent   = fBRL(final.saldo - capital);
+  document.getElementById('lucroSub').textContent   = 'taxa efetiva: ' + taxaEfetiva + '% a.m.';
+  document.getElementById('multi').textContent      = multi.toFixed(1) + 'x';
+
+  document.getElementById('avisoText').textContent =
+    'Simulação com taxa de 20% a.m. e ' + Math.round(receb*100) + '% de recebimento. ' +
+    'Taxa efetiva líquida: ' + taxaEfetiva + '% a.m. com reinvestimento total dos retornos. ' +
+    'Para fins ilustrativos.';
+
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('simChart'), {
+    type: 'line',
+    data: {
+      labels: rows.map(r => 'M' + r.mes),
+      datasets: [
+        {
+          label: 'Saldo',
+          data: rows.map(r => Math.round(r.saldo)),
+          borderColor: '#AAFF44',
+          backgroundColor: 'rgba(170,255,68,0.07)',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true,
+          tension: 0.4,
+        },
+        {
+          label: 'Capital inicial',
+          data: rows.map(() => capital),
+          borderColor: 'rgba(255,255,255,0.15)',
+          borderWidth: 1,
+          borderDash: [4,4],
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#003D1F',
+          borderColor: 'rgba(170,255,68,0.3)',
+          borderWidth: 0.5,
+          titleColor: '#AAFF44',
+          bodyColor: 'rgba(255,255,255,0.7)',
+          callbacks: { label: ctx => ' ' + fBRL(ctx.raw) }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color:'rgba(255,255,255,0.35)', font:{size:10}, maxTicksLimit:8 },
+          grid:  { color:'rgba(170,255,68,0.05)' }
+        },
+        y: {
+          ticks: { color:'rgba(255,255,255,0.35)', font:{size:10}, callback: v => fBRLk(v) },
+          grid:  { color:'rgba(170,255,68,0.05)' }
+        }
+      }
+    }
+  });
+
+  const marcadores = new Set([3,6,9,12,18,24,30,36,42,48,54,60]);
+  const filtrados = rows.filter(r => marcadores.has(r.mes) && r.mes <= meses);
+  if (!filtrados.find(r => r.mes === meses)) filtrados.push(rows[rows.length-1]);
+
+  document.getElementById('simTable').innerHTML = filtrados.map(r => `
+    <div class="table-row ${r.mes === meses ? 'mark' : ''}">
+      <span class="mes-num">Mês ${r.mes}</span>
+      <span class="neon">${fBRL(r.saldo)}</span>
+      <span>${fBRL(r.jurosReceb)}</span>
+      <span>${fBRL(r.totalJuros)}</span>
+    </div>
+  `).join('');
+}
+
+update();
+</script>
+</body>
+</html>
