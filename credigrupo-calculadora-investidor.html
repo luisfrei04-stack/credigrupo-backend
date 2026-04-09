@@ -144,6 +144,13 @@ footer span{color:var(--neon);}
   <div class="header-tag">Calculadora do Investidor</div>
 </div>
 
+<div style="background:var(--neon);padding:16px 32px;text-align:center;">
+  <p style="font-family:'Syne',sans-serif;font-size:clamp(14px,2.5vw,20px);font-weight:800;color:var(--green);letter-spacing:0.5px;line-height:1.3;">
+    QUEM EMPRESTA NA CREDIGRUPO NÃO PAGA NENHUMA TAXA
+  </p>
+  <p style="font-size:13px;color:var(--green);margin-top:4px;font-weight:500;">100% das taxas são pagas pelo tomador — custo zero para o investidor</p>
+</div>
+
 <div class="wrap">
 
   <div class="hero">
@@ -156,7 +163,7 @@ footer span{color:var(--neon);}
     <div class="inputs-title">Configure o empréstimo</div>
     <div class="inputs-grid">
       <div class="inp-group">
-        <label>Valor emprestado (R$)</label>
+        <label>Valor pedido pelo tomador (R$)</label>
         <div class="slider-row">
           <input type="range" id="valor" min="500" max="100000" step="500" value="5000" oninput="calc()">
           <span class="slider-val" id="valorVal">R$ 5.000</span>
@@ -195,8 +202,8 @@ footer span{color:var(--neon);}
 
   <div class="compare">
     <div class="compare-card bruto">
-      <div class="cc-title">O que você (investidor) recebe</div>
-      <div class="cc-row"><span class="cc-key">Valor emprestado</span><span class="cc-val" id="b-valor">—</span></div>
+      <div class="cc-title">O que você (investidor) desembolsa</div>
+      <div class="cc-row"><span class="cc-key">Você desembolsa (valor + 10%)</span><span class="cc-val" id="b-valor">—</span></div>
       <div class="cc-row"><span class="cc-key">Juros totais</span><span class="cc-val" id="b-juros">—</span></div>
       <div class="cc-row"><span class="cc-key">Total a receber</span><span class="cc-val" id="b-total">—</span></div>
       <div class="cc-total">
@@ -220,7 +227,7 @@ footer span{color:var(--neon);}
 
   <div class="diff-bar">
     <div class="diff-item">
-      <span class="diff-label">Você investe</span>
+      <span class="diff-label">Você desembolsa</span>
       <span class="diff-val neon" id="d-investe">—</span>
     </div>
     <div class="diff-divider"></div>
@@ -279,11 +286,7 @@ footer span{color:var(--neon);}
     </div>
   </div>
 
-  <div class="cta">
-    <h3>Pronto para começar a emprestar?</h3>
-    <p>Lançamento em 30 de abril de 2026. Seja um dos primeiros investidores da Credigrupo.</p>
-    <a href="https://bit.ly/credigrupo" class="btn-cta">Simular meu investimento →</a>
-  </div>
+
 
 </div>
 
@@ -328,25 +331,17 @@ function calc() {
 
   // ── LÓGICA DEFINITIVA ───────────────────────────────────────────────────
   // Tomador pede R$1.000 → recebe R$1.000
-  // Contrato é gerado por R$1.100 (valor + 10%)
-  // Investidor empresta R$1.000 mas recebe juros sobre R$1.100
+  // Contrato gerado por R$1.100 (valor pedido + 10%)
+  // INVESTIDOR desembolsa R$1.100 e recebe juros sobre R$1.100
   // R$10 por parcela vai para a Credigrupo (embutido na parcela do tomador)
-  // INVESTIDOR: custo zero, recebe juros sobre o valor contratual maior
 
-  const taxaEntrada    = valor * 0.10;              // 10% — aumenta o contrato
-  const valorContrato  = valor + taxaEntrada;        // R$1.100 — base dos juros
+  const valorPedido    = valor;                      // o que o tomador pede (slider)
+  const taxaEntrada    = valorPedido * 0.10;         // 10% taxa entrada
+  const valorContrato  = valorPedido + taxaEntrada;  // R$1.100 — o investidor desembolsa isso
   const taxaParcTot    = nParcelas * 10;             // R$10 × n — Credigrupo
   const totalTaxasCG   = taxaEntrada + taxaParcTot;  // total que a CG recebe do tomador
 
-  // Parcela do TOMADOR — calculada sobre valorContrato + R$10 CG
-  let parcelaTomador;
-  if (taxaPer === 0) {
-    parcelaTomador = valorContrato / nParcelas + 10;
-  } else {
-    parcelaTomador = valorContrato * taxaPer / (1 - Math.pow(1 + taxaPer, -nParcelas)) + 10;
-  }
-
-  // Parcela do INVESTIDOR — juros sobre valorContrato, sem o R$10 da CG
+  // Parcela do INVESTIDOR — calculada sobre valorContrato (R$1.100)
   let parcelaInvestidor;
   if (taxaPer === 0) {
     parcelaInvestidor = valorContrato / nParcelas;
@@ -354,31 +349,33 @@ function calc() {
     parcelaInvestidor = valorContrato * taxaPer / (1 - Math.pow(1 + taxaPer, -nParcelas));
   }
 
+  // Parcela do TOMADOR — parcela do investidor + R$10 da Credigrupo
+  const parcelaTomador = parcelaInvestidor + 10;
+
   // Totais do INVESTIDOR
-  const totalRecebe    = parcelaInvestidor * nParcelas;
-  const lucroInvestidor= totalRecebe - valor;          // recebe mais do que investiu
-  const roiInvestidor  = (lucroInvestidor / valor) * 100;
+  const totalRecebe     = parcelaInvestidor * nParcelas;
+  const lucroInvestidor = totalRecebe - valorContrato;   // lucro sobre o que ele desembolsou
+  const roiInvestidor   = (lucroInvestidor / valorContrato) * 100;
 
   // Totais do TOMADOR
   const totalPagaTomador = parcelaTomador * nParcelas;
-  const jurosTomador     = totalPagaTomador - valor;   // juros sobre 1100, paga mais
 
   // Atualiza comparativo — INVESTIDOR
-  document.getElementById('b-valor').textContent  = fBRL(valor);
+  document.getElementById('b-valor').textContent  = fBRL(valorContrato);
   document.getElementById('b-juros').textContent  = fBRL(lucroInvestidor);
   document.getElementById('b-total').textContent  = fBRL(totalRecebe);
   document.getElementById('b-lucro').textContent  = fBRL(lucroInvestidor);
-  document.getElementById('b-roi').textContent    = 'ROI: ' + fPct(roiInvestidor) + ' — custo zero para você';
+  document.getElementById('b-roi').textContent    = 'Multiplicou: ' + fPct(roiInvestidor) + ' sobre o valor investido';
 
-  // TOMADOR — mostra o que ele paga a mais
-  document.getElementById('l-entrada').textContent  = fBRL(valor) + ' → contrato ' + fBRL(valorContrato);
+  // TOMADOR
+  document.getElementById('l-entrada').textContent  = 'Tomador pede ' + fBRL(valorPedido) + ' → contrato ' + fBRL(valorContrato);
   document.getElementById('l-parcelas').textContent = '+ ' + fBRL(taxaParcTot) + ' nas parcelas (R$10×' + nParcelas + ')';
-  document.getElementById('l-taxas').textContent    = fBRL(totalTaxasCG) + ' (só o tomador paga)';
+  document.getElementById('l-taxas').textContent    = fBRL(totalTaxasCG) + ' (só o tomador paga à CG)';
   document.getElementById('l-lucro').textContent    = fBRL(totalRecebe);
   document.getElementById('l-roi').textContent      = 'Tomador paga ' + fBRL(totalPagaTomador) + ' no total';
 
   // Barra resumo
-  document.getElementById('d-investe').textContent = fBRL(valor);
+  document.getElementById('d-investe').textContent = fBRL(valorContrato);
   document.getElementById('d-taxas').textContent   = fBRL(lucroInvestidor);
   document.getElementById('d-lucro').textContent   = fBRL(totalRecebe);
   document.getElementById('d-roi').textContent     = fPct(roiInvestidor);
@@ -386,10 +383,11 @@ function calc() {
 
   // Aviso
   document.getElementById('aviso').textContent =
-    'Você investe ' + fBRL(valor) + '. O contrato é gerado por ' + fBRL(valorContrato) +
-    ' (valor + 10%). Você recebe juros sobre ' + fBRL(valorContrato) + ' — ' + nParcelas +
-    ' parcelas de ' + fBRL2(parcelaInvestidor) + ' cada, totalizando ' + fBRL(totalRecebe) + '. ' +
-    'O tomador paga ' + fBRL2(parcelaTomador) + ' por parcela (inclui R$10 da Credigrupo). Custo zero para o investidor.';
+    'Tomador pede ' + fBRL(valorPedido) + ' e recebe ' + fBRL(valorPedido) + '. ' +
+    'Você (investidor) desembolsa ' + fBRL(valorContrato) + ' (valor + 10% de entrada). ' +
+    'Recebe juros sobre ' + fBRL(valorContrato) + ' — ' + nParcelas + ' parcelas de ' +
+    fBRL2(parcelaInvestidor) + ', totalizando ' + fBRL(totalRecebe) + '. ' +
+    'O tomador paga ' + fBRL2(parcelaTomador) + ' por parcela (inclui R$10 da Credigrupo).';
 
   // Tabela
   const maxRows = Math.min(nParcelas, 24);
