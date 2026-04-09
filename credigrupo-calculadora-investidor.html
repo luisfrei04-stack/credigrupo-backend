@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Calculadora do Investidor — Credigrupo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#002B16;--sur:#003D1F;--sur2:#004D26;--neon:#AAFF44;--green:#006633;--white:#FFFFFF;--muted:rgba(255,255,255,0.5);--border:rgba(170,255,68,0.15);--amber:#F59E0B;--red:#EF4444;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;}
+.header{background:var(--sur);border-bottom:0.5px solid var(--border);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-bars{display:flex;gap:3px;align-items:flex-end;height:22px;}
+.logo-bar{width:4px;background:var(--neon);border-radius:2px;transform:skewY(-8deg);}
+.logo-bar:nth-child(1){height:9px;opacity:0.6;}
+.logo-bar:nth-child(2){height:19px;}
+.logo-bar:nth-child(3){height:13px;opacity:0.8;}
+.logo-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--white);letter-spacing:1px;}
+.logo-sub{font-size:8px;color:var(--neon);letter-spacing:3px;margin-top:-3px;}
+.header-tag{background:rgba(170,255,68,0.1);border:0.5px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--neon);}
+
+.wrap{max-width:860px;margin:0 auto;padding:32px 24px 48px;}
+
+.hero{margin-bottom:28px;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(170,255,68,0.08);border:0.5px solid var(--border);border-radius:20px;padding:5px 14px;margin-bottom:14px;}
+.hero-tag-dot{width:5px;height:5px;background:var(--neon);border-radius:50%;}
+.hero-tag span{color:var(--neon);font-size:11px;letter-spacing:0.5px;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(22px,3vw,32px);font-weight:800;color:var(--white);line-height:1.2;letter-spacing:-0.3px;}
+.hero h1 em{color:var(--neon);font-style:normal;}
+.hero p{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.6;}
+
+/* INPUTS */
+.inputs{background:var(--sur);border-radius:16px;padding:24px;border:0.5px solid var(--border);margin-bottom:20px;}
+.inputs-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white);margin-bottom:18px;letter-spacing:0.3px;}
+.inputs-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.inp-group{display:flex;flex-direction:column;gap:7px;}
+.inp-group label{font-size:11px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;background:var(--sur2);outline:none;}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--neon);cursor:pointer;}
+.slider-val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--neon);min-width:80px;text-align:right;}
+
+/* PERIODICIDADE */
+.period-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.ptab{flex:1;min-width:100px;padding:10px 8px;border-radius:10px;border:0.5px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-family:'Syne',sans-serif;font-weight:600;cursor:pointer;text-align:center;transition:all 0.2s;}
+.ptab.active{background:var(--neon);border-color:var(--neon);color:var(--green);}
+.ptab:hover:not(.active){border-color:rgba(170,255,68,0.4);color:rgba(255,255,255,0.8);}
+
+/* COMPARATIVO BRUTO VS LÍQUIDO */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.compare-card{border-radius:14px;padding:20px;border:0.5px solid var(--border);}
+.compare-card.bruto{background:rgba(255,255,255,0.04);}
+.compare-card.liquido{background:rgba(170,255,68,0.06);border-color:rgba(170,255,68,0.25);}
+.cc-title{font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;font-weight:600;}
+.bruto .cc-title{color:var(--muted);}
+.liquido .cc-title{color:var(--neon);}
+.cc-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);}
+.cc-row:last-child{border-bottom:none;}
+.cc-key{font-size:12px;color:var(--muted);}
+.cc-val{font-size:12px;font-weight:500;}
+.bruto .cc-val{color:rgba(255,255,255,0.8);}
+.liquido .cc-val{color:var(--neon);}
+.cc-total{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.cc-total-key{font-size:13px;color:var(--white);font-weight:500;}
+.cc-total-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.bruto .cc-total-val{color:rgba(255,255,255,0.6);}
+.liquido .cc-total-val{color:var(--neon);}
+.cc-roi{margin-top:6px;font-size:11px;text-align:right;}
+.bruto .cc-roi{color:var(--muted);}
+.liquido .cc-roi{color:var(--neon);}
+
+/* DIFERENÇA */
+.diff-bar{background:var(--sur);border-radius:12px;padding:16px 20px;border:0.5px solid var(--border);margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.diff-item{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.diff-label{font-size:10px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
+.diff-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
+.diff-val.red{color:var(--red);}
+.diff-val.neon{color:var(--neon);}
+.diff-val.amber{color:var(--amber);}
+.diff-divider{width:0.5px;height:40px;background:var(--border);}
+
+/* TABELA PARCELAS */
+.table-section{background:var(--sur);border-radius:14px;overflow:hidden;border:0.5px solid var(--border);margin-bottom:20px;}
+.table-header{padding:14px 20px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.table-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white);}
+.table-sub{font-size:11px;color:var(--muted);}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0.5px;text-transform:uppercase;padding:9px 16px;text-align:left;border-bottom:0.5px solid var(--border);}
+td{padding:10px 16px;font-size:12px;border-bottom:0.5px solid rgba(170,255,68,0.04);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(170,255,68,0.03);}
+.td-num{color:var(--muted);}
+.td-bruto{color:rgba(255,255,255,0.6);}
+.td-taxa{color:var(--red);font-size:11px;}
+.td-liq{color:var(--neon);font-weight:600;}
+.td-acum{color:var(--amber);}
+
+/* GRÁFICO */
+.chart-section{background:var(--sur);border-radius:14px;padding:20px;border:0.5px solid var(--border);margin-bottom:20px;}
+.chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.chart-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--white);}
+.chart-legend{display:flex;gap:14px;}
+.leg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+.leg-dot{width:8px;height:8px;border-radius:2px;}
+.chart-canvas{position:relative;width:100%;height:200px;}
+
+/* AVISO */
+.aviso{background:rgba(245,158,11,0.08);border:0.5px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px 16px;font-size:12px;color:rgba(245,158,11,0.8);line-height:1.6;margin-bottom:20px;}
+
+/* CTA */
+.cta{background:var(--sur);border-radius:14px;padding:24px;border:0.5px solid var(--border);text-align:center;}
+.cta h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--white);margin-bottom:6px;}
+.cta p{font-size:13px;color:var(--muted);margin-bottom:16px;}
+.btn-cta{background:var(--neon);color:var(--green);border:none;border-radius:9px;padding:13px 28px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:0.3px;}
+.btn-cta:hover{background:#99EE33;}
+
+footer{background:var(--sur);border-top:0.5px solid var(--border);padding:14px 32px;text-align:center;}
+footer p{font-size:11px;color:var(--muted);}
+footer span{color:var(--neon);}
+
+@media(max-width:600px){
+  .inputs-grid{grid-template-columns:1fr;}
+  .compare{grid-template-columns:1fr;}
+  .diff-divider{display:none;}
+  .header{padding:14px 16px;}
+  .wrap{padding:20px 14px 32px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-bars">
+      <div class="logo-bar"></div><div class="logo-bar"></div><div class="logo-bar"></div>
+    </div>
+    <div>
+      <div class="logo-name">CREDIGRUPO</div>
+      <div class="logo-sub">CRÉDITO ENTRE PESSOAS</div>
+    </div>
+  </div>
+  <div class="header-tag">Calculadora do Investidor</div>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-tag"><div class="hero-tag-dot"></div><span>Retorno líquido real</span></div>
+    <h1>Quanto você recebe de volta<br/><em>após as taxas da Credigrupo?</em></h1>
+    <p>Veja lado a lado o retorno bruto e o líquido — com todas as taxas descontadas de forma transparente.</p>
+  </div>
+
+  <div class="inputs">
+    <div class="inputs-title">Configure o empréstimo</div>
+    <div class="inputs-grid">
+      <div class="inp-group">
+        <label>Valor emprestado (R$)</label>
+        <div class="slider-row">
+          <input type="range" id="valor" min="500" max="100000" step="500" value="5000" oninput="calc()">
+          <span class="slider-val" id="valorVal">R$ 5.000</span>
+        </div>
+      </div>
+      <div class="inp-group">
+        <label>Taxa de juros ao mês (%)</label>
+        <div class="slider-row">
+          <input type="range" id="taxa" min="5" max="50" step="1" value="20" oninput="calc()">
+          <span class="slider-val" id="taxaVal">20%</span>
+        </div>
+      </div>
+      <div class="inp-group">
+        <label>Número de parcelas</label>
+        <div class="slider-row">
+          <input type="range" id="parcelas" min="1" max="48" step="1" value="12" oninput="calc()">
+          <span class="slider-val" id="parcelasVal">12 parcelas</span>
+        </div>
+      </div>
+      <div class="inp-group">
+        <label>Taxa entrada Credigrupo (%)</label>
+        <div class="slider-row" style="opacity:0.6;pointer-events:none;">
+          <input type="range" min="10" max="10" value="10">
+          <span class="slider-val" style="color:rgba(255,255,255,0.4);">10% fixo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="period-tabs">
+    <button class="ptab" onclick="setPeriod('daily',this)">Diária</button>
+    <button class="ptab" onclick="setPeriod('weekly',this)">Semanal</button>
+    <button class="ptab" onclick="setPeriod('biweekly',this)">Quinzenal</button>
+    <button class="ptab active" onclick="setPeriod('monthly',this)">Mensal</button>
+  </div>
+
+  <div class="compare">
+    <div class="compare-card bruto">
+      <div class="cc-title">O que você (investidor) recebe</div>
+      <div class="cc-row"><span class="cc-key">Valor emprestado</span><span class="cc-val" id="b-valor">—</span></div>
+      <div class="cc-row"><span class="cc-key">Juros totais</span><span class="cc-val" id="b-juros">—</span></div>
+      <div class="cc-row"><span class="cc-key">Total a receber</span><span class="cc-val" id="b-total">—</span></div>
+      <div class="cc-total">
+        <span class="cc-total-key">Seu lucro total</span>
+        <span class="cc-total-val" id="b-lucro">—</span>
+      </div>
+      <div class="cc-roi" id="b-roi">—</div>
+    </div>
+    <div class="compare-card liquido">
+      <div class="cc-title">✓ O que o tomador paga a mais</div>
+      <div class="cc-row"><span class="cc-key">Taxa entrada (10% — tomador)</span><span class="cc-val" id="l-entrada">—</span></div>
+      <div class="cc-row"><span class="cc-key">Taxas parcelas R$10×n (tomador)</span><span class="cc-val" id="l-parcelas">—</span></div>
+      <div class="cc-row"><span class="cc-key">Total pago pelo tomador à CG</span><span class="cc-val" id="l-taxas">—</span></div>
+      <div class="cc-total">
+        <span class="cc-total-key">Você recebe (integral)</span>
+        <span class="cc-total-val" id="l-lucro">—</span>
+      </div>
+      <div class="cc-roi" id="l-roi">—</div>
+    </div>
+  </div>
+
+  <div class="diff-bar">
+    <div class="diff-item">
+      <span class="diff-label">Você investe</span>
+      <span class="diff-val neon" id="d-investe">—</span>
+    </div>
+    <div class="diff-divider"></div>
+    <div class="diff-item">
+      <span class="diff-label">Juros que recebe</span>
+      <span class="diff-val neon" id="d-taxas">—</span>
+    </div>
+    <div class="diff-divider"></div>
+    <div class="diff-item">
+      <span class="diff-label">Total que recebe</span>
+      <span class="diff-val neon" id="d-lucro">—</span>
+    </div>
+    <div class="diff-divider"></div>
+    <div class="diff-item">
+      <span class="diff-label">ROI total</span>
+      <span class="diff-val amber" id="d-roi">—</span>
+    </div>
+    <div class="diff-divider"></div>
+    <div class="diff-item">
+      <span class="diff-label">Parcela recebida</span>
+      <span class="diff-val neon" id="d-parcela">—</span>
+    </div>
+  </div>
+
+  <div class="aviso" id="aviso"></div>
+
+  <div class="chart-section">
+    <div class="chart-header">
+      <span class="chart-title">Recebimento acumulado mês a mês</span>
+      <div class="chart-legend">
+        <div class="leg"><div class="leg-dot" style="background:#AAFF44;"></div>Você recebe</div>
+        <div class="leg"><div class="leg-dot" style="background:rgba(255,255,255,0.2);"></div>Tomador paga</div>
+      </div>
+    </div>
+    <div class="chart-canvas"><canvas id="myChart"></canvas></div>
+  </div>
+
+  <div class="table-section">
+    <div class="table-header">
+      <span class="table-title">Detalhamento por parcela</span>
+      <span class="table-sub" id="table-sub">—</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Você recebe</th>
+            <th>Taxa CG (tomador)</th>
+            <th>Tomador paga</th>
+            <th>Seu acumulado</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cta">
+    <h3>Pronto para começar a emprestar?</h3>
+    <p>Lançamento em 30 de abril de 2026. Seja um dos primeiros investidores da Credigrupo.</p>
+    <a href="https://bit.ly/credigrupo" class="btn-cta">Simular meu investimento →</a>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 <span>Credigrupo</span> · Crédito entre pessoas · <span>www.credigrupo.com.br</span> · Calculadora para fins ilustrativos. Valores reais podem variar.</p>
+</footer>
+
+<script>
+const fBRL = v => 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+const fBRL2 = v => 'R$ ' + parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fPct = v => v.toFixed(1) + '%';
+
+const PERIODOS = {
+  daily:    { label:'Diária',    fator: 1/30,         unidade:'dia' },
+  weekly:   { label:'Semanal',   fator: 1/4.333,      unidade:'semana' },
+  biweekly: { label:'Quinzenal', fator: 1/2,          unidade:'quinzena' },
+  monthly:  { label:'Mensal',    fator: 1,            unidade:'mês' },
+};
+
+let periodo = 'monthly';
+let myChart = null;
+
+function setPeriod(p, btn) {
+  periodo = p;
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  calc();
+}
+
+function calc() {
+  const valor    = parseInt(document.getElementById('valor').value);
+  const taxa     = parseInt(document.getElementById('taxa').value) / 100;
+  const nParcelas= parseInt(document.getElementById('parcelas').value);
+  const per      = PERIODOS[periodo];
+
+  document.getElementById('valorVal').textContent    = fBRL(valor);
+  document.getElementById('taxaVal').textContent     = Math.round(taxa*100) + '%';
+  document.getElementById('parcelasVal').textContent = nParcelas + ' parcelas';
+
+  // Taxa equivalente por periodicidade
+  const taxaPer = Math.pow(1 + taxa, per.fator) - 1;
+
+  // ── LÓGICA DEFINITIVA ───────────────────────────────────────────────────
+  // Tomador pede R$1.000 → recebe R$1.000
+  // Contrato é gerado por R$1.100 (valor + 10%)
+  // Investidor empresta R$1.000 mas recebe juros sobre R$1.100
+  // R$10 por parcela vai para a Credigrupo (embutido na parcela do tomador)
+  // INVESTIDOR: custo zero, recebe juros sobre o valor contratual maior
+
+  const taxaEntrada    = valor * 0.10;              // 10% — aumenta o contrato
+  const valorContrato  = valor + taxaEntrada;        // R$1.100 — base dos juros
+  const taxaParcTot    = nParcelas * 10;             // R$10 × n — Credigrupo
+  const totalTaxasCG   = taxaEntrada + taxaParcTot;  // total que a CG recebe do tomador
+
+  // Parcela do TOMADOR — calculada sobre valorContrato + R$10 CG
+  let parcelaTomador;
+  if (taxaPer === 0) {
+    parcelaTomador = valorContrato / nParcelas + 10;
+  } else {
+    parcelaTomador = valorContrato * taxaPer / (1 - Math.pow(1 + taxaPer, -nParcelas)) + 10;
+  }
+
+  // Parcela do INVESTIDOR — juros sobre valorContrato, sem o R$10 da CG
+  let parcelaInvestidor;
+  if (taxaPer === 0) {
+    parcelaInvestidor = valorContrato / nParcelas;
+  } else {
+    parcelaInvestidor = valorContrato * taxaPer / (1 - Math.pow(1 + taxaPer, -nParcelas));
+  }
+
+  // Totais do INVESTIDOR
+  const totalRecebe    = parcelaInvestidor * nParcelas;
+  const lucroInvestidor= totalRecebe - valor;          // recebe mais do que investiu
+  const roiInvestidor  = (lucroInvestidor / valor) * 100;
+
+  // Totais do TOMADOR
+  const totalPagaTomador = parcelaTomador * nParcelas;
+  const jurosTomador     = totalPagaTomador - valor;   // juros sobre 1100, paga mais
+
+  // Atualiza comparativo — INVESTIDOR
+  document.getElementById('b-valor').textContent  = fBRL(valor);
+  document.getElementById('b-juros').textContent  = fBRL(lucroInvestidor);
+  document.getElementById('b-total').textContent  = fBRL(totalRecebe);
+  document.getElementById('b-lucro').textContent  = fBRL(lucroInvestidor);
+  document.getElementById('b-roi').textContent    = 'ROI: ' + fPct(roiInvestidor) + ' — custo zero para você';
+
+  // TOMADOR — mostra o que ele paga a mais
+  document.getElementById('l-entrada').textContent  = fBRL(valor) + ' → contrato ' + fBRL(valorContrato);
+  document.getElementById('l-parcelas').textContent = '+ ' + fBRL(taxaParcTot) + ' nas parcelas (R$10×' + nParcelas + ')';
+  document.getElementById('l-taxas').textContent    = fBRL(totalTaxasCG) + ' (só o tomador paga)';
+  document.getElementById('l-lucro').textContent    = fBRL(totalRecebe);
+  document.getElementById('l-roi').textContent      = 'Tomador paga ' + fBRL(totalPagaTomador) + ' no total';
+
+  // Barra resumo
+  document.getElementById('d-investe').textContent = fBRL(valor);
+  document.getElementById('d-taxas').textContent   = fBRL(lucroInvestidor);
+  document.getElementById('d-lucro').textContent   = fBRL(totalRecebe);
+  document.getElementById('d-roi').textContent     = fPct(roiInvestidor);
+  document.getElementById('d-parcela').textContent = fBRL2(parcelaInvestidor);
+
+  // Aviso
+  document.getElementById('aviso').textContent =
+    'Você investe ' + fBRL(valor) + '. O contrato é gerado por ' + fBRL(valorContrato) +
+    ' (valor + 10%). Você recebe juros sobre ' + fBRL(valorContrato) + ' — ' + nParcelas +
+    ' parcelas de ' + fBRL2(parcelaInvestidor) + ' cada, totalizando ' + fBRL(totalRecebe) + '. ' +
+    'O tomador paga ' + fBRL2(parcelaTomador) + ' por parcela (inclui R$10 da Credigrupo). Custo zero para o investidor.';
+
+  // Tabela
+  const maxRows = Math.min(nParcelas, 24);
+  let acumInv = 0;
+  let rows = '';
+  for (let i = 1; i <= maxRows; i++) {
+    acumInv += parcelaInvestidor;
+    rows += `<tr>
+      <td class="td-num">${i}</td>
+      <td class="td-liq">${fBRL2(parcelaInvestidor)}</td>
+      <td class="td-taxa">R$ 10,00 (CG)</td>
+      <td class="td-bruto">${fBRL2(parcelaTomador)}</td>
+      <td class="td-acum">${fBRL(acumInv)}</td>
+    </tr>`;
+  }
+  if (nParcelas > 24) {
+    rows += `<tr><td colspan="5" style="text-align:center;color:var(--muted);font-size:11px;padding:10px;">... mais ${nParcelas-24} parcelas</td></tr>`;
+  }
+  document.getElementById('tableBody').innerHTML = rows;
+  document.getElementById('table-sub').textContent =
+    nParcelas + ' parcelas · Você recebe ' + fBRL2(parcelaInvestidor) + ' · Tomador paga ' + fBRL2(parcelaTomador);
+
+  // Gráfico
+  const labels = [];
+  const dataTomador    = [];
+  const dataInvestidor = [];
+  let acB = 0, acI = 0;
+  for (let i = 1; i <= nParcelas; i++) {
+    labels.push(i);
+    acB += parcelaTomador;
+    acI += parcelaInvestidor;
+    dataTomador.push(Math.round(acB));
+    dataInvestidor.push(Math.round(acI));
+  }
+
+  if (myChart) myChart.destroy();
+  myChart = new Chart(document.getElementById('myChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Tomador paga',
+          data: dataTomador,
+          borderColor: 'rgba(255,255,255,0.2)',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderDash: [4,4],
+          pointRadius: 0,
+          tension: 0.3,
+        },
+        {
+          label: 'Você recebe',
+          data: dataInvestidor,
+          borderColor: '#AAFF44',
+          backgroundColor: 'rgba(170,255,68,0.06)',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true,
+          tension: 0.3,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#003D1F',
+          borderColor: 'rgba(170,255,68,0.3)',
+          borderWidth: 0.5,
+          titleColor: '#AAFF44',
+          bodyColor: 'rgba(255,255,255,0.7)',
+          callbacks: {
+            title: ctx => 'Parcela ' + ctx[0].label,
+            label: ctx => ' ' + ctx.dataset.label + ': ' + fBRL(ctx.raw),
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color:'rgba(255,255,255,0.3)', font:{size:10}, maxTicksLimit:10 },
+          grid:  { color:'rgba(170,255,68,0.04)' },
+          title: { display:true, text:'Parcela nº', color:'rgba(255,255,255,0.3)', font:{size:10} }
+        },
+        y: {
+          ticks: { color:'rgba(255,255,255,0.3)', font:{size:10}, callback: v => fBRL(v) },
+          grid:  { color:'rgba(170,255,68,0.04)' }
+        }
+      }
+    }
+  });
+}
+
+calc();
+</script>
+</body>
+</html>
